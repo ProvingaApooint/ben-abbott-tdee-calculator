@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ben Abbott's TDEE & Macronutrient Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 10px; }
+    h1 { color: #2C3E50; text-align: center; }
+    label { display: block; margin: 10px 0 5px; }
+    input, select { width: 100%; padding: 8px; margin-bottom: 10px; }
+    button { background-color: #2C3E50; color: white; border: none; padding: 10px; width: 100%; font-size: 1em; cursor: pointer; }
+    button:hover { background-color: #1e2a38; }
+    .result { background: #f4f4f4; padding: 10px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Ben Abbott's TDEE & Macronutrient Calculator</h1>
+
+  <label>Units</label>
+  <select id="units">
+    <option value="metric">Metric (kg, cm)</option>
+    <option value="imperial">Imperial (lb, ft/in)</option>
+  </select>
+
+  <label>Gender</label>
+  <select id="gender">
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select>
+
+  <label>Age (years)</label>
+  <input type="number" id="age" min="0" />
+
+  <div id="heightInputs">
+    <label>Height (cm)</label>
+    <input type="number" id="heightCm" />
+  </div>
+
+  <div id="heightImperial" style="display:none;">
+    <label>Height - Feet</label>
+    <input type="number" id="heightFt" />
+    <label>Height - Inches</label>
+    <input type="number" id="heightIn" />
+  </div>
+
+  <label>Weight (kg)</label>
+  <input type="number" id="weightKg" />
+
+  <div id="weightImperial" style="display:none;">
+    <label>Weight (lb)</label>
+    <input type="number" id="weightLb" />
+  </div>
+
+  <label>Activity Level</label>
+  <select id="activity">
+    <option value="1.2">Sedentary (little or no exercise)</option>
+    <option value="1.375">Light (1-3 days/week)</option>
+    <option value="1.55">Moderate (3-5 days/week)</option>
+    <option value="1.725">Active (6-7 days/week)</option>
+    <option value="1.9">Very Active (hard exercise/job)</option>
+  </select>
+
+  <label>Goal</label>
+  <select id="goal">
+    <option value="1">Maintain weight</option>
+    <option value="0.8">Weight loss</option>
+    <option value="1.2">Weight gain</option>
+  </select>
+
+  <button onclick="calculate()">Calculate</button>
+
+  <div id="results" class="result" style="display:none;"></div>
+
+  <script>
+    const unitsSelect = document.getElementById('units');
+    unitsSelect.addEventListener('change', () => {
+      const metric = unitsSelect.value === 'metric';
+      document.getElementById('heightInputs').style.display = metric ? 'block' : 'none';
+      document.getElementById('heightImperial').style.display = metric ? 'none' : 'block';
+      document.getElementById('weightKg').style.display = metric ? 'block' : 'none';
+      document.getElementById('weightImperial').style.display = metric ? 'none' : 'block';
+    });
+
+    function calculate() {
+      const gender = document.getElementById('gender').value;
+      const age = parseFloat(document.getElementById('age').value) || 0;
+      let height = parseFloat(document.getElementById('heightCm').value) || 0;
+      let weight = parseFloat(document.getElementById('weightKg').value) || 0;
+      if (unitsSelect.value === 'imperial') {
+        const ft = parseFloat(document.getElementById('heightFt').value) || 0;
+        const inch = parseFloat(document.getElementById('heightIn').value) || 0;
+        height = ft * 30.48 + inch * 2.54;
+        weight = parseFloat(document.getElementById('weightLb').value) * 0.453592 || 0;
+      }
+      const activityFactor = parseFloat(document.getElementById('activity').value);
+      const goalFactor = parseFloat(document.getElementById('goal').value);
+      let bmr = (10 * weight) + (6.25 * height) - (5 * age) + (gender === 'male' ? 5 : -161);
+      const tdee = bmr * activityFactor;
+      const goalCalories = Math.round(tdee * goalFactor);
+      const protein = Math.round((goalCalories * 0.3) / 4);
+      const carbs = Math.round((goalCalories * 0.4) / 4);
+      const fats = Math.round((goalCalories * 0.3) / 9);
+      const resultDiv = document.getElementById('results');
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = `
+        <h3>Results</h3>
+        <p><strong>Maintenance Calories:</strong> ${Math.round(tdee)} kcal</p>
+        <p><strong>Goal Calories:</strong> ${goalCalories} kcal</p>
+        <p><strong>Protein:</strong> ${protein} g/day</p>
+        <p><strong>Carbs:</strong> ${carbs} g/day</p>
+        <p><strong>Fats:</strong> ${fats} g/day</p>
+      `;
+    }
+  </script>
+</body>
+</html>
